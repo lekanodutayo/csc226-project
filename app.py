@@ -3,38 +3,30 @@ import sqlite3
 
 app = Flask(__name__)
 
-def insert_to_db(genres, favorite, recommendations):
-    conn = sqlite3.connect("database.db")
-    c = conn.cursor()
-    c.execute(
-        "INSERT INTO users (genres, favorite, recommendations) VALUES (?, ?, ?)",
-        (";".join(genres), favorite, ";".join(recommendations))
-    )
-    conn.commit()
+# Get song recommendations from the database
+def get_recommendations_from_db(selected_genres, limit=5):
+    conn = sqlite3.connect('database.db')
+    cursor = conn.cursor()
+    placeholders = ','.join('?' for _ in selected_genres)
+    query = f'''
+        SELECT artist, song_name, spotify_url
+        FROM songs
+        WHERE genre IN ({placeholders})
+        ORDER BY RANDOM()
+        LIMIT ?
+    '''
+    cursor.execute(query, (*selected_genres, limit))
+    results = cursor.fetchall()
     conn.close()
+    return results
 
-@app.route("/", methods=["GET", "POST"])
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    if request.method == "POST":
-        genres = request.form.getlist("genres")
-        favorite = request.form["favorite"]
-
-        recommendations = []
-        if "Pop" in genres:
-            recommendations.append("<a href='https://open.spotify.com/album/2pqdSWeJVsXAhHFuVLzuA8'>As It Was — Harry Styles</a>")
-        if "Rock" in genres:
-            recommendations.append("Bohemian Rhapsody — Queen")
-        if "Hip-Hop" in genres:
-            recommendations.append("SICKO MODE — Travis Scott")
-        if "R&B" in genres:
-            recommendations.append("Blinding Lights — The Weeknd")
-
-        # Save to the database
-        insert_to_db(genres, favorite, recommendations)
-
-        return render_template("result.html", recs=recommendations)
-
-    return render_template("index.html")
+    if request.method == 'POST':
+        genres = request.form.getlist('genres')  # from checkboxes
+        recommendations = get_recommendations_from_db(genres)
+        return render_template('result.html', recs=recommendations)
+    return render_template('index.html')
 
 if __name__ == "__main__":
     app.run(debug=False)

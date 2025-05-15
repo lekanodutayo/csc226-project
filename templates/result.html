@@ -1,17 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Song Recommendations</title>
+  <meta charset="UTF-8">
+  <title>Recommended Songs</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h2>Recommended Songs:</h2>
-    <ul>
-        {% for rec in recs %}
-            <li>{{ rec|safe }}</li>  <!-- This is the key fix -->
-        {% endfor %}
-    </ul>
+  <h1>🎵 Recommended Songs:</h1>
 
-    <a href="/">Go back</a>
+  {% if recs %}
+    <ul>
+      {% for artist, song, url in recs %}
+        <li>
+          <strong>{{ song }}</strong> by {{ artist }} — 
+          <a href="{{ url }}" target="_blank">Listen on Spotify</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No recommendations found. Try selecting a different genre.</p>
+  {% endif %}
+
+  <br>
+  <a href="/">🔙 Go back</a>
 </body>
 </html>
 
