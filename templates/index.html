@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music Recommender</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <h1>Find New Music</h1>
+  <form method="POST" action="/">
+    <label>Your Favorite Genres:</label><br>
+    <input type="checkbox" name="genres" value="Pop"> Pop<br>
+    <input type="checkbox" name="genres" value="Rock"> Rock<br>
+    <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop<br>
+    <input type="checkbox" name="genres" value="R&B"> R&B<br><br>
+
+    <label>Favorite Artist or Song:</label><br>
+    <input type="text" name="favorite"><br><br>
+
+    <button type="submit">Get Recommendations</button>
+  </form>
+</body>
+</html>
+

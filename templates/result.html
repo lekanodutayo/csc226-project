@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Recommendations</title>
+</head>
+<body>
+  <h2>Recommended Songs:</h2>
+  <ul>
+    {% for song in recs %}
+      <li>{{ song }}</li>
+    {% endfor %}
+  </ul>
+  <a href="/">Go back</a>
+</body>
+</html>
+
