@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import random
-import os
+import random, os
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -34,6 +34,9 @@ sample_songs = {
     ]
 }
 
+# In-memory user store (temporary)
+users = {"test": "test"}  # username: password
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -46,14 +49,49 @@ def home():
             if genre in sample_songs:
                 recs.extend(random.sample(sample_songs[genre], min(1, len(sample_songs[genre]))))
 
+        # Save to history
+        if "history" not in session:
+            session["history"] = []
+
+        for artist, title, url in recs:
+            session["history"].append(
+                (session.get("username", "Guest"), artist, title, url, datetime.now().strftime("%Y-%m-%d %H:%M"))
+            )
+
         return render_template("result.html", recs=recs)
 
     return render_template("index.html")
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        u = request.form["username"]
+        p = request.form["password"]
+        if users.get(u) == p:
+            session["username"] = u
+            return redirect(url_for("home"))
+        return "Invalid login", 401
+    return render_template("login.html")
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        u = request.form["username"]
+        p = request.form["password"]
+        users[u] = p
+        session["username"] = u
+        return redirect(url_for("home"))
+    return render_template("signup.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
+
+@app.route("/history")
+def history():
+    h = session.get("history", [])
+    return render_template("history.html", history=h[::-1])  # reverse chronological
 
 if __name__ == "__main__":
     app.run(debug=True)
