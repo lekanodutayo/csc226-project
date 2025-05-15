@@ -5,27 +5,68 @@
   <title>Find New Music</title>
   <link rel="stylesheet" href="/static/styles.css">
   <style>
+    :root {
+      --bg-light: #fdfdfd;
+      --text-light: #000;
+      --bg-dark: #121212;
+      --text-dark: #f0f0f0;
+      --button-green: #28a745;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     h1 {
-      font-size: 32px;
+      font-size: 48px;
       margin-bottom: 20px;
+    }
+
+    .history-link {
+      margin-bottom: 30px;
+    }
+
+    .history-link a {
+      text-decoration: none;
+      color: var(--button-green);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    form {
+      text-align: center;
     }
 
     .genre-btn {
       display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
+      margin: 12px;
+      padding: 16px 28px;
+      font-size: 20px;
       border: 2px solid #333;
-      border-radius: 8px;
+      border-radius: 10px;
       background-color: white;
       cursor: pointer;
       transition: all 0.2s ease;
+    }
+
+    body.dark-mode .genre-btn {
+      background-color: #222;
+      color: white;
+      border-color: white;
     }
 
     .genre-btn input[type="checkbox"] {
@@ -33,20 +74,115 @@
     }
 
     .genre-btn.active {
-      background-color: #333;
+      background-color: var(--button-green);
       color: white;
+      border-color: var(--button-green);
+      box-shadow: 0 0 12px rgba(40, 167, 69, 0.4);
+    }
+
+    body.dark-mode .genre-btn.active {
+      background-color: #28a745;
+      color: #ffffff;
+      border-color: #28a745;
+      box-shadow: 0 0 12px rgba(72, 220, 105, 0.8);
     }
 
     button[type="submit"] {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
+      margin-top: 30px;
+      padding: 16px 32px;
+      font-size: 18px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
       cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #ddd;
+    }
+
+    .top-left {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 20px;
+    }
+
+    .bottom-right {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+    }
+
+    .bottom-right button {
+      font-size: 14px;
+      padding: 8px 14px;
+    }
+
+    .bottom-left {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      font-size: 16px;
+    }
+
+    .bottom-left a {
+      color: #007bff;
+      margin-right: 14px;
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    #loader {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 20px;
+      color: #28a745;
+      display: none;
+    }
+
+    .note {
+      font-size: 48px;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
     }
   </style>
 </head>
 <body>
+
+  <!-- 👋 Welcome -->
+  {% if session.username %}
+    <div class="top-left">
+      👋 Welcome, <strong>{{ session.username }}</strong>
+    </div>
+  {% endif %}
+
+  <!-- 🌙 Dark Mode Button -->
+  <div class="bottom-right">
+    <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+  </div>
+
+  <!-- 🔐 Login / Logout -->
+  <div class="bottom-left">
+    {% if session.username %}
+      <a href="/logout">Logout</a>
+    {% else %}
+      <a href="/login">Login</a>
+      <a href="/signup">Sign Up</a>
+      <a href="/">Continue as Guest</a>
+    {% endif %}
+  </div>
+
+  <!-- 🔥 Main Content -->
   <h1>Find New Music</h1>
+
+  <div class="history-link">
+    <a href="/history">📜 View My History</a>
+  </div>
 
   <form method="POST" action="/" id="genre-form">
     <div id="genre-buttons">
@@ -67,17 +203,40 @@
       </label>
     </div>
 
-    <button type="submit">🎧 Get Recommendations</button>
+    <button type="submit">💡 Get Recommendations</button>
   </form>
 
+  <div id="loader">
+    <p>Loading recommendations...</p>
+    <div class="note">🎵</div>
+  </div>
+
   <script>
+    // Green highlight toggle
     const labels = document.querySelectorAll('.genre-btn');
     labels.forEach(label => {
-      label.addEventListener('click', () => {
-        const input = label.querySelector('input');
-        input.checked = !input.checked;
+      const checkbox = label.querySelector('input');
+      if (checkbox.checked) label.classList.add('active');
+      label.addEventListener('click', (e) => {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
         label.classList.toggle('active');
       });
+    });
+
+    // Dark mode memory
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark-mode');
+    }
+
+    // Show loader
+    document.getElementById("genre-form").addEventListener("submit", function () {
+      document.getElementById("loader").style.display = "block";
     });
   </script>
 </body>

@@ -2,27 +2,107 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Recommended Songs</title>
-  <link rel="stylesheet" href="/static/styles.css">
+  <title>Your Recommendations</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .song {
+      margin-bottom: 30px;
+    }
+
+    iframe {
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      height: 80px;
+      border: none;
+    }
+
+    a {
+      text-decoration: none;
+      color: #28a745;
+    }
+
+    .back-link {
+      margin-top: 40px;
+      display: inline-block;
+    }
+
+    .share-buttons {
+      margin-top: 30px;
+    }
+
+    .share-buttons button {
+      padding: 10px 20px;
+      font-size: 14px;
+      margin: 5px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .share-buttons button:hover {
+      background-color: #e0e0e0;
+    }
+  </style>
 </head>
 <body>
-  <h1>🎵 Recommended Songs:</h1>
+  <h2>🎵 Your Recommended Songs</h2>
 
   {% if recs %}
-    <ul>
-      {% for artist, song, url in recs %}
-        <li>
-          <strong>{{ song }}</strong> by {{ artist }} — 
-          <a href="{{ url }}" target="_blank">Listen on Spotify</a>
-        </li>
-      {% endfor %}
-    </ul>
+    {% for artist, song_name, spotify_url in recs %}
+      {% set track_id = spotify_url.split('/')[-1].split('?')[0] %}
+      <div class="song">
+        <p><strong>{{ song_name }}</strong> by {{ artist }}</p>
+        <iframe src="https://open.spotify.com/embed/track/{{ track_id }}" allow="encrypted-media" allowtransparency="true"></iframe>
+      </div>
+    {% endfor %}
   {% else %}
-    <p>No recommendations found. Try selecting a different genre.</p>
+    <p>No recommendations found. Try selecting a genre.</p>
   {% endif %}
 
-  <br>
-  <a href="/">🔙 Go back</a>
+  <!-- 📤 Share & Copy Buttons -->
+  <div class="share-buttons">
+    <button onclick="sharePlaylist()">📤 Share Playlist</button>
+    <button onclick="copyLink()">🔗 Copy Link</button>
+  </div>
+
+  <a class="back-link" href="/">🔙 Go Back</a>
+
+  <script>
+    function sharePlaylist() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Check out this music!',
+          text: 'Here’s a playlist I just got recommended:',
+          url: window.location.href
+        }).then(() => {
+          console.log('Shared successfully!');
+        }).catch((error) => {
+          alert('Error sharing: ' + error);
+        });
+      } else {
+        alert("Sharing is not supported on this device.");
+      }
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("Link copied to clipboard!");
+      }).catch((err) => {
+        alert("Failed to copy: " + err);
+      });
+    }
+  </script>
 </body>
 </html>
 
