@@ -3,29 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>Recommended Songs</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
         iframe {
             border: none;
             width: 100%;
             max-width: 400px;
-            height: 152px; /* height with album art */
+            height: 152px;
             margin: 20px 0;
         }
         body {
-            background-color: #121212;
-            color: white;
-            font-family: sans-serif;
             text-align: center;
         }
     </style>
 </head>
 <body>
-    <h1>Your Spotify Recommendations</h1>
-    {% for song in songs %}
-        <iframe src="{{ song }}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-    {% endfor %}
+    <h1>🎵 Recommended Songs:</h1>
+
+    {% if recs %}
+        {% for song in recs %}
+            <p><strong>{{ song[1] }}</strong> by {{ song[0] }}</p>
+            <iframe src="{{ song[2] }}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+        {% endfor %}
+    {% else %}
+        <p>No recommendations found.</p>
+    {% endif %}
+
     <br>
-    <a href="/">Back</a>
+    <a href="/">🔙 Go back</a>
 </body>
 </html>
 
