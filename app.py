@@ -6,8 +6,10 @@ app = Flask(__name__)
 def insert_to_db(genres, favorite, recommendations):
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
-    c.execute("INSERT INTO users (genres, favorite, recommendations) VALUES (?, ?, ?)",
-              (",".join(genres), favorite, ",".join(recommendations)))
+    c.execute(
+        "INSERT INTO users (genres, favorite, recommendations) VALUES (?, ?, ?)",
+        (";".join(genres), favorite, ";".join(recommendations))
+    )
     conn.commit()
     conn.close()
 
@@ -19,18 +21,19 @@ def index():
 
         recommendations = []
         if "Pop" in genres:
-            recommendations.append("As It Was – Harry Styles")
+            recommendations.append("<a href='https://open.spotify.com/album/2pqdSWeJVsXAhHFuVLzuA8'>As It Was — Harry Styles</a>")
         if "Rock" in genres:
-            recommendations.append("Bohemian Rhapsody – Queen")
+            recommendations.append("Bohemian Rhapsody — Queen")
         if "Hip-Hop" in genres:
-            recommendations.append("SICKO MODE – Travis Scott")
+            recommendations.append("SICKO MODE — Travis Scott")
         if "R&B" in genres:
-            recommendations.append("Blinding Lights – The Weeknd")
+            recommendations.append("Blinding Lights — The Weeknd")
 
         # Save to the database
         insert_to_db(genres, favorite, recommendations)
 
         return render_template("result.html", recs=recommendations)
+
     return render_template("index.html")
 
 if __name__ == "__main__":
