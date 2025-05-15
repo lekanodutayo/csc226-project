@@ -1,173 +1,123 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from flask_bcrypt import Bcrypt
+import os
 import sqlite3
+import csv
+import random
+import requests
+from flask import Flask, render_template, request, redirect, session, url_for
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this to something secure!
-bcrypt = Bcrypt(app)
+app.secret_key = 'your_secret_key'  # Replace with your own
 
-# ---------------------- DB Connection ----------------------
+# Spotify Credentials from environment variables (Render Dashboard)
+CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID')
+CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET')
+REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI')
+
 def get_db_connection():
-    return sqlite3.connect("database.db")
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-# ---------------------- User Functions ----------------------
-def get_user_by_username(username):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user = cursor.fetchone()
-    conn.close()
-    return user
-
-def save_user(username, hashed_password):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
-    conn.commit()
-    conn.close()
-
-# ---------------------- Recommendations ----------------------
-def get_recommendations_from_db(selected_genres, limit=5):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    if not selected_genres:
-        cursor.execute('''
-            SELECT artist, song_name, spotify_url
-            FROM songs
-            ORDER BY RANDOM()
-            LIMIT ?
-        ''', (limit,))
-        return cursor.fetchall()
-
-    if len(selected_genres) == 1:
-        cursor.execute('''
-            SELECT artist, song_name, spotify_url
-            FROM songs
-            WHERE genre = ?
-            ORDER BY RANDOM()
-            LIMIT ?
-        ''', (selected_genres[0], limit))
-        return cursor.fetchall()
-
-    per_genre = max(1, limit // len(selected_genres))
-    results = []
-
-    for genre in selected_genres:
-        cursor.execute('''
-            SELECT artist, song_name, spotify_url
-            FROM songs
-            WHERE genre = ?
-            ORDER BY RANDOM()
-            LIMIT ?
-        ''', (genre, per_genre))
-        results.extend(cursor.fetchall())
-
-    if len(results) < limit:
-        placeholders = ','.join('?' for _ in selected_genres)
-        query = f'''
-            SELECT artist, song_name, spotify_url
-            FROM songs
-            WHERE genre IN ({placeholders})
-            ORDER BY RANDOM()
-            LIMIT ?
-        '''
-        cursor.execute(query, (*selected_genres, limit - len(results)))
-        results.extend(cursor.fetchall())
-
-    conn.close()
-    return results[:limit]
-
-def save_history(genres, recs):
-    if 'user_id' not in session:
-        return  # only save for logged-in users
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    for artist, song, url in recs:
-        cursor.execute('''
-            INSERT INTO history (genres, artist, song_name, spotify_url, user_id)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (",".join(genres), artist, song, url, session['user_id']))
-    conn.commit()
-    conn.close()
-
-# ---------------------- Routes ----------------------
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        genres = request.form.getlist("genres")
-        recommendations = get_recommendations_from_db(genres, 5)
+    username = session.get('username')
+    return render_template('index.html', username=username)
 
-        # Save to database if logged in, else store in session
-        if 'user_id' in session:
-            save_history(genres, recommendations)
-        else:
-            session['guest_recs'] = recommendations
+@app.route('/set_user', methods=['POST'])
+def set_user():
+    session['username'] = request.form['username']
+    return redirect('/')
 
-        return render_template("result.html", recs=recommendations)
-    return render_template("index.html")
-
-@app.route('/history')
-def view_history():
-    if 'user_id' in session:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT genres, artist, song_name, spotify_url, timestamp
-            FROM history
-            WHERE user_id = ?
-            ORDER BY timestamp DESC
-            LIMIT 50
-        ''', (session['user_id'],))
-        rows = cursor.fetchall()
-        conn.close()
-        return render_template("history.html", history=rows)
-
-    elif 'guest_recs' in session:
-        guest_history = [
-            ("Guest", artist, song, url, "Session only")
-            for artist, song, url in session['guest_recs']
-        ]
-        return render_template("history.html", history=guest_history)
-
-    else:
-        return "No history available. Please get recommendations first!"
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
-        try:
-            save_user(username, hashed_pw)
-            return redirect(url_for('login'))
-        except:
-            return "Username already exists!"
-    return render_template("signup.html")
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = get_user_by_username(username)
-        if user and bcrypt.check_password_hash(user[2], password):
-            session['user_id'] = user[0]
-            session['username'] = user[1]
-            return redirect(url_for('index'))
-        else:
-            return "Invalid login credentials"
-    return render_template("login.html")
+@app.route('/guest')
+def guest():
+    session['guest'] = True
+    return redirect('/')
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect('/')
 
-# ---------------------- Run App ----------------------
+@app.route('/recommend', methods=['POST'])
+def recommend():
+    selected_genres = request.form.getlist('genre')
+    if not selected_genres:
+        return redirect('/')
 
-if __name__ == "__main__":
+    selected_genre = random.choice(selected_genres)
+
+    # Load songs from CSV
+    with open('songs.csv', newline='') as csvfile:
+        songs = [row for row in csv.DictReader(csvfile) if row['genre'] == selected_genre]
+
+    recommendations = random.sample(songs, min(4, len(songs)))
+
+    # Save history if not guest
+    if not session.get('guest'):
+        username = session.get('username')
+        conn = get_db_connection()
+        for song in recommendations:
+            conn.execute(
+                'INSERT INTO history (username, genre, song, artist, spotify_link) VALUES (?, ?, ?, ?, ?)',
+                (username, selected_genre, song['song'], song['artist'], song['spotify_link'])
+            )
+        conn.commit()
+        conn.close()
+
+    return render_template('result.html', recommendations=recommendations)
+
+@app.route('/history')
+def history():
+    username = session.get('username')
+    if username:
+        conn = get_db_connection()
+        rows = conn.execute(
+            'SELECT * FROM history WHERE username = ? ORDER BY timestamp DESC LIMIT 10',
+            (username,)
+        ).fetchall()
+        conn.close()
+        return render_template('history.html', history=rows)
+    return render_template('history.html', history=[])
+
+# ------------------ SPOTIFY LOGIN ------------------ #
+
+@app.route('/login')
+def login():
+    scope = "user-read-private user-read-email"
+    auth_url = (
+        "https://accounts.spotify.com/authorize"
+        f"?response_type=code&client_id={CLIENT_ID}"
+        f"&scope={scope}&redirect_uri={REDIRECT_URI}"
+    )
+    return redirect(auth_url)
+
+@app.route('/callback')
+def callback():
+    code = request.args.get('code')
+    token_url = "https://accounts.spotify.com/api/token"
+    payload = {
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': REDIRECT_URI,
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET
+    }
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    response = requests.post(token_url, data=payload, headers=headers)
+    tokens = response.json()
+    access_token = tokens.get('access_token')
+
+    if access_token:
+        user_info = requests.get(
+            'https://api.spotify.com/v1/me',
+            headers={'Authorization': f'Bearer {access_token}'}
+        ).json()
+        session['username'] = user_info.get('display_name', user_info.get('id'))
+        session['guest'] = False
+    return redirect('/')
+
+# ---------------------------------------------------- #
+
+if __name__ == '__main__':
     app.run(debug=True)
 
