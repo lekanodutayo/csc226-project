@@ -1,23 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Music Recommender</title>
+  <meta charset="UTF-8">
+  <title>Find New Music</title>
   <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .genre-btn {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .genre-btn input[type="checkbox"] {
+      display: none;
+    }
+
+    .genre-btn.active {
+      background-color: #333;
+      color: white;
+    }
+
+    button[type="submit"] {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <h1>Find New Music</h1>
-  <form method="POST" action="/">
-    <label>Your Favorite Genres:</label><br>
-    <input type="checkbox" name="genres" value="Pop"> Pop<br>
-    <input type="checkbox" name="genres" value="Rock"> Rock<br>
-    <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop<br>
-    <input type="checkbox" name="genres" value="R&B"> R&B<br><br>
 
-    <label>Favorite Artist or Song:</label><br>
-    <input type="text" name="favorite"><br><br>
+  <form method="POST" action="/" id="genre-form">
+    <div id="genre-buttons">
+      <label class="genre-btn">
+        <input type="checkbox" name="genres" value="Pop"> Pop
+      </label>
+      <label class="genre-btn">
+        <input type="checkbox" name="genres" value="Rock"> Rock
+      </label>
+      <label class="genre-btn">
+        <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop
+      </label>
+      <label class="genre-btn">
+        <input type="checkbox" name="genres" value="R&B"> R&B
+      </label>
+      <label class="genre-btn">
+        <input type="checkbox" name="genres" value="Norteñas"> Norteñas
+      </label>
+    </div>
 
-    <button type="submit">Get Recommendations</button>
+    <button type="submit">🎧 Get Recommendations</button>
   </form>
+
+  <script>
+    const labels = document.querySelectorAll('.genre-btn');
+    labels.forEach(label => {
+      label.addEventListener('click', () => {
+        const input = label.querySelector('input');
+        input.checked = !input.checked;
+        label.classList.toggle('active');
+      });
+    });
+  </script>
 </body>
 </html>
 
