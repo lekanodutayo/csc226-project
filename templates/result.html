@@ -1,54 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Recommended Songs</title>
-  <style>
-    body {
-      background-color: #121212;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-
-    .song-card {
-      background-color: #1e1e1e;
-      padding: 20px;
-      margin: 20px auto;
-      width: 80%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #000;
-    }
-
-    iframe {
-      border: none;
-      width: 100%;
-      height: 152px; /* taller for album art */
-      border-radius: 12px;
-    }
-
-    a {
-      color: #1db954;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Recommended Songs</title>
+    <style>
+        iframe {
+            border: none;
+            width: 100%;
+            max-width: 400px;
+            height: 152px; /* height with album art */
+            margin: 20px 0;
+        }
+        body {
+            background-color: #121212;
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <h2>🎵 Recommended Songs</h2>
-
-  {% for title, artist in songs %}
-    <div class="song-card">
-      <iframe src="https://open.spotify.com/embed/search/{{ title | urlencode }} {{ artist | urlencode }}"
-              allowtransparency="true"
-              allow="encrypted-media">
-      </iframe>
-      <p><strong>{{ title }}</strong> by {{ artist }}</p>
-    </div>
-  {% endfor %}
-
-  <br>
-  <a href="{{ url_for('home') }}">🔙 Back to Home</a>
+    <h1>Your Spotify Recommendations</h1>
+    {% for song in songs %}
+        <iframe src="{{ song }}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    {% endfor %}
+    <br>
+    <a href="/">Back</a>
 </body>
 </html>
 
