@@ -2,107 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Your Recommendations</title>
+  <title>Recommended Songs</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #fafafa;
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       padding: 40px;
       text-align: center;
     }
 
     h2 {
-      margin-bottom: 20px;
-    }
-
-    .song {
+      font-size: 36px;
       margin-bottom: 30px;
     }
 
-    iframe {
+    .embed-container {
+      margin: 20px auto;
+      max-width: 600px;
+      background-color: #1e1e1e;
+      padding: 16px;
       border-radius: 12px;
-      width: 100%;
-      max-width: 400px;
-      height: 80px;
-      border: none;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
     }
 
-    a {
-      text-decoration: none;
-      color: #28a745;
+    iframe {
+      width: 100%;
+      height: 152px; /* 🔥 Show album art */
+      border: none;
+      border-radius: 12px;
     }
 
     .back-link {
       margin-top: 40px;
-      display: inline-block;
     }
 
-    .share-buttons {
-      margin-top: 30px;
+    .back-link a {
+      color: #1DB954;
+      text-decoration: none;
+      font-size: 18px;
     }
 
-    .share-buttons button {
-      padding: 10px 20px;
-      font-size: 14px;
-      margin: 5px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .share-buttons button:hover {
-      background-color: #e0e0e0;
+    .back-link a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <h2>🎵 Your Recommended Songs</h2>
+  <h2>🎧 Recommended Songs</h2>
 
-  {% if recs %}
-    {% for artist, song_name, spotify_url in recs %}
-      {% set track_id = spotify_url.split('/')[-1].split('?')[0] %}
-      <div class="song">
-        <p><strong>{{ song_name }}</strong> by {{ artist }}</p>
-        <iframe src="https://open.spotify.com/embed/track/{{ track_id }}" allow="encrypted-media" allowtransparency="true"></iframe>
-      </div>
-    {% endfor %}
-  {% else %}
-    <p>No recommendations found. Try selecting a genre.</p>
-  {% endif %}
+  {% for artist, song, url in recs %}
+    <div class="embed-container">
+      <iframe 
+        src="{{ url.replace('open.spotify.com/track/', 'open.spotify.com/embed/track/') }}" 
+        allowtransparency="true" 
+        allow="encrypted-media">
+      </iframe>
+    </div>
+  {% endfor %}
 
-  <!-- 📤 Share & Copy Buttons -->
-  <div class="share-buttons">
-    <button onclick="sharePlaylist()">📤 Share Playlist</button>
-    <button onclick="copyLink()">🔗 Copy Link</button>
+  <div class="back-link">
+    <a href="/">🔙 Back to Home</a>
   </div>
-
-  <a class="back-link" href="/">🔙 Go Back</a>
-
-  <script>
-    function sharePlaylist() {
-      if (navigator.share) {
-        navigator.share({
-          title: 'Check out this music!',
-          text: 'Here’s a playlist I just got recommended:',
-          url: window.location.href
-        }).then(() => {
-          console.log('Shared successfully!');
-        }).catch((error) => {
-          alert('Error sharing: ' + error);
-        });
-      } else {
-        alert("Sharing is not supported on this device.");
-      }
-    }
-
-    function copyLink() {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        alert("Link copied to clipboard!");
-      }).catch((err) => {
-        alert("Failed to copy: " + err);
-      });
-    }
-  </script>
 </body>
 </html>
 

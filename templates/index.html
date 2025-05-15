@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>Find New Music</title>
-  <link rel="stylesheet" href="/static/styles.css">
   <style>
     :root {
-      --bg-light: #fdfdfd;
-      --text-light: #000;
-      --bg-dark: #121212;
-      --text-dark: #f0f0f0;
-      --button-green: #28a745;
+      --spotify-green: #1DB954;
+      --spotify-dark: #121212;
+      --spotify-light: #1e1e1e;
+      --text-light: #ffffff;
+      --text-muted: #b3b3b3;
     }
 
     body {
-      font-family: Arial, sans-serif;
-      background-color: var(--bg-light);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: var(--spotify-dark);
       color: var(--text-light);
       margin: 0;
       height: 100vh;
@@ -23,28 +22,19 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    body.dark-mode {
-      background-color: var(--bg-dark);
-      color: var(--text-dark);
     }
 
     h1 {
       font-size: 48px;
-      margin-bottom: 20px;
-    }
-
-    .history-link {
-      margin-bottom: 30px;
+      margin-bottom: 10px;
+      color: white;
     }
 
     .history-link a {
-      text-decoration: none;
-      color: var(--button-green);
-      font-size: 20px;
+      color: var(--spotify-green);
       font-weight: bold;
+      font-size: 18px;
+      text-decoration: none;
     }
 
     form {
@@ -53,20 +43,20 @@
 
     .genre-btn {
       display: inline-block;
-      margin: 12px;
-      padding: 16px 28px;
-      font-size: 20px;
-      border: 2px solid #333;
-      border-radius: 10px;
-      background-color: white;
+      margin: 10px;
+      padding: 14px 28px;
+      font-size: 18px;
+      border: 2px solid var(--text-light);
+      border-radius: 50px;
+      background-color: var(--spotify-light);
+      color: var(--text-light);
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
-    body.dark-mode .genre-btn {
-      background-color: #222;
-      color: white;
-      border-color: white;
+    .genre-btn:hover {
+      background-color: var(--spotify-green);
+      color: black;
     }
 
     .genre-btn input[type="checkbox"] {
@@ -74,81 +64,76 @@
     }
 
     .genre-btn.active {
-      background-color: var(--button-green);
-      color: white;
-      border-color: var(--button-green);
-      box-shadow: 0 0 12px rgba(40, 167, 69, 0.4);
-    }
-
-    body.dark-mode .genre-btn.active {
-      background-color: #28a745;
-      color: #ffffff;
-      border-color: #28a745;
-      box-shadow: 0 0 12px rgba(72, 220, 105, 0.8);
+      background-color: var(--spotify-green);
+      color: black;
+      border-color: var(--spotify-green);
     }
 
     button[type="submit"] {
       margin-top: 30px;
-      padding: 16px 32px;
+      padding: 14px 30px;
       font-size: 18px;
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      background-color: var(--spotify-green);
+      color: black;
+      border: none;
+      border-radius: 40px;
       cursor: pointer;
+      font-weight: bold;
     }
 
     button[type="submit"]:hover {
-      background-color: #ddd;
+      background-color: #1ed760;
     }
 
     .top-left {
       position: absolute;
       top: 20px;
-      left: 20px;
-      font-size: 20px;
+      left: 25px;
+      font-size: 18px;
+      color: var(--text-muted);
     }
 
-    .bottom-right {
+    .bottom-left, .bottom-right {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
-
-    .bottom-right button {
       font-size: 14px;
-      padding: 8px 14px;
     }
 
     .bottom-left {
-      position: absolute;
       bottom: 20px;
-      left: 20px;
-      font-size: 16px;
+      left: 25px;
+    }
+
+    .bottom-right {
+      bottom: 20px;
+      right: 25px;
     }
 
     .bottom-left a {
-      color: #007bff;
-      margin-right: 14px;
+      color: var(--spotify-green);
+      margin-right: 12px;
       text-decoration: none;
-      font-size: 16px;
+    }
+
+    .bottom-left a:hover {
+      text-decoration: underline;
     }
 
     #loader {
       margin-top: 30px;
       text-align: center;
       font-size: 20px;
-      color: #28a745;
+      color: var(--spotify-green);
       display: none;
     }
 
     .note {
-      font-size: 48px;
+      font-size: 42px;
       animation: bounce 1s infinite;
     }
 
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
+      50% { transform: translateY(-10px); }
     }
   </style>
 </head>
@@ -161,12 +146,12 @@
     </div>
   {% endif %}
 
-  <!-- 🌙 Dark Mode Button -->
+  <!-- 🌙 Dark Mode Button (optional toggle later) -->
   <div class="bottom-right">
     <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
   </div>
 
-  <!-- 🔐 Login / Logout -->
+  <!-- 🔐 Login / Logout / Guest -->
   <div class="bottom-left">
     {% if session.username %}
       <a href="/logout">Logout</a>
@@ -212,7 +197,7 @@
   </div>
 
   <script>
-    // Green highlight toggle
+    // Highlight toggle
     const labels = document.querySelectorAll('.genre-btn');
     labels.forEach(label => {
       const checkbox = label.querySelector('input');
@@ -224,20 +209,15 @@
       });
     });
 
-    // Dark mode memory
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    }
-
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark-mode');
-    }
-
-    // Show loader
+    // Loader on submit
     document.getElementById("genre-form").addEventListener("submit", function () {
       document.getElementById("loader").style.display = "block";
     });
+
+    // Optional dark mode toggle
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
+    }
   </script>
 </body>
 </html>
