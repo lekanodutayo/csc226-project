@@ -6,64 +6,40 @@
   <style>
     body {
       background-color: #121212;
-      color: #fff;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      padding: 40px;
+      color: white;
+      font-family: Arial, sans-serif;
       text-align: center;
     }
 
-    h2 {
-      font-size: 36px;
-      margin-bottom: 30px;
-    }
-
-    .embed-container {
-      margin: 20px auto;
-      max-width: 600px;
+    .song-card {
       background-color: #1e1e1e;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      margin: 15px auto;
+      width: 60%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
     }
 
-    iframe {
-      width: 100%;
-      height: 152px; /* 🔥 Show album art */
-      border: none;
-      border-radius: 12px;
-    }
-
-    .back-link {
-      margin-top: 40px;
-    }
-
-    .back-link a {
-      color: #1DB954;
+    a {
+      color: #1db954;
       text-decoration: none;
-      font-size: 18px;
-    }
-
-    .back-link a:hover {
-      text-decoration: underline;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h2>🎧 Recommended Songs</h2>
+  <h2>🎵 Recommended Songs</h2>
 
-  {% for artist, song, url in recs %}
-    <div class="embed-container">
-      <iframe 
-        src="{{ url.replace('open.spotify.com/track/', 'open.spotify.com/embed/track/') }}" 
-        allowtransparency="true" 
-        allow="encrypted-media">
-      </iframe>
+  {% for title, artist in songs %}
+    <div class="song-card">
+      <h3>{{ title }}</h3>
+      <p>by {{ artist }}</p>
+      <a href="https://open.spotify.com/search/{{ title | urlencode }} {{ artist | urlencode }}" target="_blank">▶ Listen on Spotify</a>
     </div>
   {% endfor %}
 
-  <div class="back-link">
-    <a href="/">🔙 Back to Home</a>
-  </div>
+  <br>
+  <a href="{{ url_for('home') }}">🔙 Back to Home</a>
 </body>
 </html>
 
