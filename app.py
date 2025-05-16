@@ -1,97 +1,71 @@
 from flask import Flask, render_template, request, redirect, url_for, session
-import random, os
-from datetime import datetime
+import os, random
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
-# Sample song data: (artist, title, Spotify embed URL)
+# Spotify embed track links by genre
 sample_songs = {
     "Pop": [
-        ("The Weeknd", "Blinding Lights", "https://open.spotify.com/embed/track/0VjIjW4GlUZAMYd2vXMi3b"),
-        ("Dua Lipa", "Levitating", "https://open.spotify.com/embed/track/463CkQjx2Zk1yXoBuierM9"),
-        ("Harry Styles", "As It Was", "https://open.spotify.com/embed/track/4LRPiXqCikLlN15c3yImP7")
+        "https://open.spotify.com/embed/track/0VjIjW4GlUZAMYd2vXMi3b",
+        "https://open.spotify.com/embed/track/4h9wh7iOZ0GGn8QVp4RAOB",
+        "https://open.spotify.com/embed/track/4aWmUDTfIPGksMNLV2rQP2"
     ],
     "Rock": [
-        ("Queen", "Bohemian Rhapsody", "https://open.spotify.com/embed/track/7tFiyTwD0nx5a1eklYtX2J"),
-        ("Nirvana", "Smells Like Teen Spirit", "https://open.spotify.com/embed/track/5ghIJDpPoe3CfHMGu71E6T"),
-        ("Eagles", "Hotel California", "https://open.spotify.com/embed/track/40riOy7x9W7GXjyGp4pjAv")
+        "https://open.spotify.com/embed/track/7tFiyTwD0nx5a1eklYtX2J",
+        "https://open.spotify.com/embed/track/5ghIJDpPoe3CfHMGu71E6T",
+        "https://open.spotify.com/embed/track/40riOy7x9W7GXjyGp4pjAv"
     ],
     "Hip-Hop": [
-        ("Travis Scott", "SICKO MODE", "https://open.spotify.com/embed/track/2xLMifQCjDGFmkHkpNLD9h"),
-        ("Drake", "God's Plan", "https://open.spotify.com/embed/track/6DCZcSspjsKoFjzjrWoCdn"),
-        ("Kendrick Lamar", "Money Trees", "https://open.spotify.com/embed/track/2vwlzO0Qp8kfEtzTsCXfyE")
+        "https://open.spotify.com/embed/track/2xLMifQCjDGFmkHkpNLD9h",
+        "https://open.spotify.com/embed/track/3qT4bUD1MaWpGrTwcvguhb",
+        "https://open.spotify.com/embed/track/2dLLR6qlu5UJ5gk0dKz0h3"
     ],
     "R&B": [
-        ("Mariah Carey", "We Belong Together", "https://open.spotify.com/embed/track/4pbJqGIASGPr0ZpGpnWkDn"),
-        ("Jamie Foxx", "Blame It", "https://open.spotify.com/embed/track/0xYTqQeNBMZ5tPjUOJF1EC"),
-        ("Miguel", "Adorn", "https://open.spotify.com/embed/track/0iM1M9CzZkLXEfpKzRddHI")
+        "https://open.spotify.com/embed/track/2BtE7qm1qzM80p9vLSiXkj",
+        "https://open.spotify.com/embed/track/4RCwb5c5zQfQVsGiFOy1cM",
+        "https://open.spotify.com/embed/track/4w8niZpiMy6qz1mntFA5uM"
     ],
-    "Norteñas": [
-        ("Peso Pluma", "LADY GAGA", "https://open.spotify.com/embed/track/0fZKkcrbZk4WkOrcFJbrZT"),
-        ("Natanael Cano", "AMG", "https://open.spotify.com/embed/track/5odlY52u43F5BjByhxg7wg"),
-        ("Peso Pluma", "PRC", "https://open.spotify.com/embed/track/6UjfByV0nHNs5WJvTPAsvm")
+    "Latin music": [
+        "https://open.spotify.com/embed/track/1WkMMavIMc4x3bpaIw74v2",
+        "https://open.spotify.com/embed/track/1z3HgkzqdeMPv9zM7EZGdh",
+        "https://open.spotify.com/embed/track/7MAibcTli4IisCtbHKrGMh"
     ]
 }
-
-# In-memory user store (temporary)
-users = {"test": "test"}  # username: password
 
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
-        selected_genres = request.form.getlist("genres")
-        if not selected_genres:
-            return redirect(url_for("home"))
+        genres = request.form.getlist("genres")
+        if not genres:
+            return render_template("index.html", error="Please select at least one genre.")
 
-        recs = []
-        for genre in selected_genres:
+        all_recs = []
+        for genre in genres:
             if genre in sample_songs:
-                recs.extend(random.sample(sample_songs[genre], min(1, len(sample_songs[genre]))))
+                songs = random.sample(sample_songs[genre], min(3, len(sample_songs[genre])))
+                all_recs.extend(songs)
 
-        # Save to history
-        if "history" not in session:
-            session["history"] = []
-
-        for artist, title, url in recs:
-            session["history"].append(
-                (session.get("username", "Guest"), artist, title, url, datetime.now().strftime("%Y-%m-%d %H:%M"))
-            )
-
-        return render_template("result.html", recs=recs)
+        return render_template("result.html", recs=all_recs, genres=genres)
 
     return render_template("index.html")
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/history")
+def history():
+    return render_template("history.html")
+
+@app.route("/login")
 def login():
-    if request.method == "POST":
-        u = request.form["username"]
-        p = request.form["password"]
-        if users.get(u) == p:
-            session["username"] = u
-            return redirect(url_for("home"))
-        return "Invalid login", 401
     return render_template("login.html")
 
-@app.route("/signup", methods=["GET", "POST"])
+@app.route("/signup")
 def signup():
-    if request.method == "POST":
-        u = request.form["username"]
-        p = request.form["password"]
-        users[u] = p
-        session["username"] = u
-        return redirect(url_for("home"))
     return render_template("signup.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
-
-@app.route("/history")
-def history():
-    h = session.get("history", [])
-    return render_template("history.html", history=h[::-1])  # reverse chronological
 
 if __name__ == "__main__":
     app.run(debug=True)
