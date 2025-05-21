@@ -28,6 +28,10 @@ def index():
             recommendations.append("SICKO MODE — Travis Scott")
         if "R&B" in genres:
             recommendations.append("Blinding Lights — The Weeknd")
+        if "Afro-Beat" in genres:
+            recommendations.append("Fall- Davvido")
+        if "Afro-Beat" in genres:
+            recommendations.append("Morayo - Wizkid")
 
         # Save to the database
         insert_to_db(genres, favorite, recommendations)
