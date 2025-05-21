@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Music Recommender</title>
+  <meta charset="UTF-8">
+  <title>Find New Music</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
+<<<<<<< HEAD
 <body style="background-color: #ADD8E6;"></body>
   <h1>Find New Music</h1>
   <form method="POST" action="/">
@@ -13,12 +15,70 @@
     <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop<br>
     <input type="checkbox" name="genres" value="R&B"> R&B<br><br>
     <input type="checkbox" name="genres" value="Afro-Beat">Afro-Beat<br><br>
+=======
+<body>
+  {% if session.username %}
+    <div class="top-left">
+      👋 Welcome, <strong>{{ session.username }}</strong>
+    </div>
+  {% endif %}
 
-    <label>Favorite Artist or Song:</label><br>
-    <input type="text" name="favorite"><br><br>
+  <h1>Find New Music</h1>
+>>>>>>> 0438ebd9621fcfdc572b99e603ff85b24b348318
 
-    <button type="submit">Get Recommendations</button>
+  {% if error %}
+    <p style="color: red;">{{ error }}</p>
+  {% endif %}
+
+  <div class="history-link">
+    <a href="/history">📜 View My History</a>
+  </div>
+
+  <form method="POST" action="/" id="genre-form">
+    <div id="genre-buttons">
+      <label class="genre-btn {% if 'Pop' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="Pop" {% if 'Pop' in selected %}checked{% endif %}> Pop
+      </label>
+      <label class="genre-btn {% if 'Rock' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="Rock" {% if 'Rock' in selected %}checked{% endif %}> Rock
+      </label>
+      <label class="genre-btn {% if 'Hip-Hop' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="Hip-Hop" {% if 'Hip-Hop' in selected %}checked{% endif %}> Hip-Hop
+      </label>
+      <label class="genre-btn {% if 'R&B' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="R&B" {% if 'R&B' in selected %}checked{% endif %}> R&B
+      </label>
+      <label class="genre-btn {% if 'Latin music' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="Latin music" {% if 'Latin music' in selected %}checked{% endif %}> Latin music
+      </label>
+    </div>
+
+    <button type="submit">💡 Get Recommendations</button>
   </form>
+
+  <div class="auth-links" style="margin-top: 20px;">
+    <a href="/login">Login</a>
+    <a href="/signup">Sign Up</a>
+    <a href="/">Continue as Guest</a>
+  </div>
+
+  <footer class="bottom-right">
+    <span style="color: var(--text-muted);">🎵 Created by <strong>Edgar Del Angel</strong></span>
+  </footer>
+
+  <script>
+    const labels = document.querySelectorAll('.genre-btn');
+    labels.forEach(label => {
+      const checkbox = label.querySelector('input');
+      if (checkbox.checked) label.classList.add('active');
+
+      label.addEventListener('click', function (e) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        label.classList.toggle('active');
+      });
+    });
+  </script>
 </body>
 </html>
 
