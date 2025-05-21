@@ -30,6 +30,11 @@ sample_songs = {
         "https://open.spotify.com/embed/track/1WkMMavIMc4x3bpaIw74v2",
         "https://open.spotify.com/embed/track/1z3HgkzqdeMPv9zM7EZGdh",
         "https://open.spotify.com/embed/track/7MAibcTli4IisCtbHKrGMh"
+    ],
+    "Afro-Beat": [
+        "https://open.spotify.com/playlist/37i9dQZF1DZ06evO0vEAMw?si=4XKHagefQBubQcsx33xrCA",
+        "https://open.spotify.com/track/2IBrgYf3Hjw16c6oNwkZ9M?si=1d776b19e1de48c0",
+        "https://open.spotify.com/track/1mk8ZC9OeTZMr8Wy31LqRj?si=60e63076aee044d0"
     ]
 }
 
@@ -40,7 +45,6 @@ def home():
         if not genres:
             return render_template("index.html", error="Please select at least one genre.")
 
-<<<<<<< HEAD
         recommendations = []
         if "Pop" in genres:
             recommendations.append("<a href='https://open.spotify.com/album/2pqdSWeJVsXAhHFuVLzuA8'>As It Was — Harry Styles</a>")
@@ -54,13 +58,6 @@ def home():
             recommendations.append("Fall- Davvido")
         if "Afro-Beat" in genres:
             recommendations.append("Morayo - Wizkid")
-=======
-        all_recs = []
-        for genre in genres:
-            if genre in sample_songs:
-                songs = random.sample(sample_songs[genre], min(3, len(sample_songs[genre])))
-                all_recs.extend(songs)
->>>>>>> 0438ebd9621fcfdc572b99e603ff85b24b348318
 
         return render_template("result.html", recs=all_recs, genres=genres)
 

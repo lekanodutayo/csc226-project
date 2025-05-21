@@ -5,17 +5,6 @@
   <title>Find New Music</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<<<<<<< HEAD
-<body style="background-color: #ADD8E6;"></body>
-  <h1>Find New Music</h1>
-  <form method="POST" action="/">
-    <label>Your Favorite Genres:</label><br>
-    <input type="checkbox" name="genres" value="Pop"> Pop<br>
-    <input type="checkbox" name="genres" value="Rock"> Rock<br>
-    <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop<br>
-    <input type="checkbox" name="genres" value="R&B"> R&B<br><br>
-    <input type="checkbox" name="genres" value="Afro-Beat">Afro-Beat<br><br>
-=======
 <body>
   {% if session.username %}
     <div class="top-left">
@@ -23,8 +12,8 @@
     </div>
   {% endif %}
 
+<body style="background-color: #ADD8E6;"></body>
   <h1>Find New Music</h1>
->>>>>>> 0438ebd9621fcfdc572b99e603ff85b24b348318
 
   {% if error %}
     <p style="color: red;">{{ error }}</p>
@@ -51,7 +40,21 @@
       <label class="genre-btn {% if 'Latin music' in selected %}active{% endif %}">
         <input type="checkbox" name="genres" value="Latin music" {% if 'Latin music' in selected %}checked{% endif %}> Latin music
       </label>
+      </label>
+      <label class="genre-btn {% if 'Afro-Beat' in selected %}active{% endif %}">
+        <input type="checkbox" name="genres" value="Afro-Beat" {% if 'Afro-Beat' in selected %}checked{% endif %}> Afro-Beat
+      </label>
     </div>
+  <form method="POST" action="/">
+    <label>Your Favorite Genres:</label><br>
+    <input type="checkbox" name="genres" value="Pop"> Pop<br>
+    <input type="checkbox" name="genres" value="Rock"> Rock<br>
+    <input type="checkbox" name="genres" value="Hip-Hop"> Hip-Hop<br>
+    <input type="checkbox" name="genres" value="R&B"> R&B<br><br>
+    <input type="checkbox" name="genres" value="Afro-Beat">Afro-Beat<br><br>
+
+    <label>Favorite Artist or Song:</label><br>
+    <input type="text" name="favorite"><br><br>
 
     <button type="submit">💡 Get Recommendations</button>
   </form>
